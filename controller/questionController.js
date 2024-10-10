@@ -34,7 +34,8 @@ async function askQuestion(req, res) {
 //** All question handler**
 const AllQuestions = async (req, res) => {
   try {
-    const selectAllQuestions = "SELECT questions.*, users.username, users.email FROM questions JOIN users ON questions.user_id = users.userid;";
+    const selectAllQuestions =
+      "SELECT questions.*, users.username, users.email FROM questions JOIN users ON questions.user_id = users.userid;";
     const response = await dbConnection.query(selectAllQuestions);
     if (response[0].length === 0) {
       return res.status(404).json({
@@ -72,4 +73,71 @@ const SingleQuestion = async (req, res) => {
   }
 };
 
-module.exports = { AllQuestions, SingleQuestion, askQuestion };
+// edit question
+const editQuestion = async (req, res) => {
+  const userId = req.user.userid;
+  const { questionId } = req.params;
+  const { title, content } = req.body;
+
+  if (!title && !content) {
+    return res
+      .status(400)
+      .json({ error: "At least title or description is required" });
+  }
+
+  const getQuestionQuery = `SELECT user_id FROM questions WHERE question_id = ?`;
+
+  try {
+    const [questionResult] = await dbConnection.query(getQuestionQuery, [
+      questionId,
+    ]);
+
+    if (questionResult.length === 0) {
+      return res
+        .status(404)
+        .json({ error: `No question found with id ${questionId}` });
+    }
+
+    // to check if the current user owns the question
+    const questionOwnerId = questionResult[0].user_id;
+    if (questionOwnerId !== userId) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to edit this question" });
+    }
+
+    let fields = [];
+    let values = [];
+
+    if (title) {
+      fields.push("title = ?");
+      values.push(title);
+    }
+
+    if (content) {
+      fields.push("content = ?");
+      values.push(content);
+    }
+
+    values.push(questionId);
+
+    const updateQuery = `UPDATE questions SET ${fields.join(
+      ", "
+    )} WHERE question_id = ?`;
+
+    const [updateResult] = await dbConnection.query(updateQuery, values);
+
+    if (updateResult.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ error: `No question found with id ${questionId}` });
+    }
+
+    return res.status(200).json({ message: "Question updated successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+module.exports = { AllQuestions, SingleQuestion, askQuestion, editQuestion };
