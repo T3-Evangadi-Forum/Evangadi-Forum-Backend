@@ -1,6 +1,6 @@
 const express = require("express");
-const dotenv= require("dotenv");
-dotenv.config()
+const dotenv = require("dotenv");
+dotenv.config();
 const app = express();
 port = process.env.PORT;
 
@@ -20,13 +20,12 @@ app.use("/api/users", userRoutes);
 
 // questions routes middleware
 const questionsRoutes = require("./routes/questionRoutes.js");
-const answersRoutes = require("./routes/answerRoutes.js");
 const authMiddleware = require("./middleware/authMiddleware.js");
 // questions routes middleware??
 app.use("/api/questions", authMiddleware, questionsRoutes);
 
 //answer route
-const answerRoutes = require("./routes/answerroute.js");
+const answerRoutes = require("./routes/answerRoutes.js");
 app.use("/api/answer", authMiddleware, answerRoutes);
 
 async function start() {
