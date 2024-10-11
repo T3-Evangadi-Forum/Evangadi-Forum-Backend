@@ -34,7 +34,8 @@ async function askQuestion(req, res) {
 //** All question handler**
 const AllQuestions = async (req, res) => {
   try {
-    const selectAllQuestions = "SELECT questions.*, users.username, users.email FROM questions JOIN users ON questions.user_id = users.userid;";
+    const selectAllQuestions =
+      "SELECT questions.*, users.username, users.email FROM questions JOIN users ON questions.user_id = users.userid ORDER BY questions.question_id DESC;";
     const response = await dbConnection.query(selectAllQuestions);
     if (response[0].length === 0) {
       return res.status(404).json({
@@ -43,7 +44,6 @@ const AllQuestions = async (req, res) => {
       });
     }
     res.status(200).json(response[0]);
-    console.log(response[0]);
   } catch (error) {
     console.log(error);
     res.send(error);
