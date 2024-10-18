@@ -35,7 +35,7 @@ async function askQuestion(req, res) {
 const AllQuestions = async (req, res) => {
   try {
     const selectAllQuestions =
-      "SELECT questions.*, users.username, users.email FROM questions JOIN users ON questions.user_id = users.userid;";
+      "SELECT questions.*, users.username, users.email FROM questions JOIN users ON questions.user_id = users.userid ORDER BY questions.question_id DESC;";
     const response = await dbConnection.query(selectAllQuestions);
     if (response[0].length === 0) {
       return res.status(404).json({
